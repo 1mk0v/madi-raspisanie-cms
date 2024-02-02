@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from auth import router as auth_router
+from group import router as group_router
 
 app = FastAPI(
     title='MADI Raspisanie CMS',
@@ -21,3 +22,4 @@ app.add_middleware(
 )
 
 app.include_router(auth_router.router)
+app.include_router(group_router.router)

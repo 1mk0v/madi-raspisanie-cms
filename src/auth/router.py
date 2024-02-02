@@ -9,13 +9,15 @@ router = APIRouter(
     tags=['Auth']
 )
 
-@router.post('/')
+@router.post('/token')
 async def auth_user(
     data: Annotated[AppOAuth2PasswordRequestForm, Depends()]
 ):
+    print(data.username)
     try:
         auth = Authenticator()
-        return await auth.authUser(UserDBWithPsw(login=data.username, pwd=data.password))
+        await auth.authUser(UserDBWithPsw(login=data.username, pwd=data.password))
+        return auth.tokenCreater.getJWT(data.username, data.scopes)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,

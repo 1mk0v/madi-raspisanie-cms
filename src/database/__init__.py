@@ -1,4 +1,4 @@
-from sqlalchemy import Table
+from sqlalchemy import Table, Engine
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy.exc as SQLException
 from pydantic import BaseModel, create_model, ConfigDict, SkipValidation
@@ -10,7 +10,7 @@ class DatabaseInterface:
     def __init__(
             self,
             table_schema:Table,
-            engine
+            engine:Engine
             ) -> None:
         self.schema = table_schema
         Session = sessionmaker(bind=engine)
