@@ -3,7 +3,6 @@ from .config import DB_HOST, DB_NAME, DB_PASSWORD, DB_USER
 
 DB_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
-
 engine = create_engine(DB_URL, echo=False)
 metadata = MetaData()
 
@@ -25,71 +24,83 @@ auditorium = Table(
     'auditorium',
     metadata, 
     Column("id", Integer, auditorium_id_seq, server_default=auditorium_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )          
 date = Table(
     'date', 
     metadata,
     Column("id", Integer, date_id_seq, server_default=date_id_seq.next_value() , primary_key=True), 
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )                
 department = Table(
     'department',
     metadata,
     Column("id", Integer, department_id_seq, server_default=department_id_seq.next_value() , primary_key=True), 
-    autoload_with=engine
-)          
+    autoload_with=engine,
+    extend_existing=True
+)
 discipline = Table(
     'discipline',
     metadata,
     Column("id", Integer, discipline_id_seq, server_default=discipline_id_seq.next_value() , primary_key=True), 
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )          
 exam_info = Table(
     'exam_info', 
     metadata,
     Column("id", Integer, exam_info_id_seq, server_default=exam_info_id_seq.next_value() , primary_key=True), 
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )           
 frequency = Table(
     'frequency', 
     metadata,
     Column("id", Integer, frequency_id_seq, server_default=frequency_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )           
 group = Table(
     'group', 
     metadata,
     Column("id", Integer, group_id_seq, server_default=group_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )               
 schedule_info = Table(
     'schedule_info', 
     metadata,
     Column("id", Integer, schedule_info_id_seq, server_default=schedule_info_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )       
 teacher = Table(
     'teacher', 
     metadata,
     Column("id", Integer, teacher_id_seq, server_default=teacher_id_seq.next_value() , primary_key=True), 
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )             
 time = Table(
     'time', 
     metadata, 
     Column("id", Integer, time_id_seq, server_default=time_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )                
 type = Table(
     'type', 
     metadata,
     Column("id", Integer, type_id_seq, server_default=type_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )                
 weekday = Table(
     'weekday', 
     metadata,
     Column("id", Integer, weekday_id_seq, server_default=weekday_id_seq.next_value() , primary_key=True),
-    autoload_with=engine
+    autoload_with=engine,
+    extend_existing=True
 )
