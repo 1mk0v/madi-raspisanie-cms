@@ -2,7 +2,7 @@ from exceptions import BaseAPIException
 from fastapi import status
 
 class AuthException(BaseAPIException):
-    def __init__(self, *args: object, message: str = "Auth error!", status_code = status.HTTP_400_BAD_REQUEST) -> None:
+    def __init__(self, *args: object, message: str = "Authentication error!", status_code = status.HTTP_400_BAD_REQUEST) -> None:
         super().__init__(*args, message = message, status_code = status_code)
 
 
