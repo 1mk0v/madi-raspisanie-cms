@@ -35,14 +35,3 @@ async def register_user(user:UserDBWithPsw) -> UsersDB:
             status_code=error.status_code,
             detail=error.message
         )
-    
-@router.delete('/delete/user', dependencies=[oauth2_scheme])
-async def delete_user(id):
-    try:
-        auth = Authenticator()
-        return await auth.delete_user(id)
-    except BaseAPIException as error:
-        raise HTTPException(
-            status_code=error.status_code,
-            detail=error.message
-        )

@@ -36,6 +36,3 @@ class Authenticator:
                 hashed_password=hashed_password
             ))
         return UsersDB(login=user.login)
-    
-    async def delete_user(self, user_id:int):
-        return await self.db.delete(user_id)
