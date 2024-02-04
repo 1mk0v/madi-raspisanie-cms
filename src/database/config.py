@@ -1,6 +1,4 @@
-import os 
-from dotenv import load_dotenv
-load_dotenv()
+import os
 
 DB_SCHEDULE_NAME = os.getenv('DB_SCHEDULE_NAME')
 DB_SCHEDULE_USER = os.getenv('DB_SCHEDULE_USER')

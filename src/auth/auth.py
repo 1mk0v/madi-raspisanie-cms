@@ -1,43 +1,41 @@
-from . import TokenCreater
+from . import TokenCreater, PasswordsManager
 from .config import SECRET_KEY, ALGORITHM 
-from .models import UserDBWithPsw
-from .exceptions import AuthException
-from requests import auth, exceptions as request_exception
+from .models import UserDBWithPsw, UserDBWithHashedPassword, UsersDB
+from .exceptions import NotFoundUserError, IncorrectPasswordError
+from requests import auth
 from database import DatabaseInterface, schemas
-from fastapi.security import OAuth2PasswordRequestForm
-        
+
+
 class Authenticator:
 
     def __init__(self) -> None:
         self.bazis = auth.BazisMadiRequests()
         self.db = DatabaseInterface(schemas.user, schemas.cms_engine)
-        self.tokenCreater = TokenCreater(SECRET_KEY, ALGORITHM)
+        self.token_creater = TokenCreater(SECRET_KEY, ALGORITHM)
+        self.password_manager = PasswordsManager()
 
-    async def authUser(self, user:UserDBWithPsw):
-        try:
-            if await self.bazis.login(user=user.login, password=user.pwd):
-                return True
-            else:
-                raise AuthException()
-        except request_exception.BaseRequestsException as error:
-            print(await self.db.get())
-            raise AuthException(message=error.message, status_code=error.status_code)
-
+    async def is_madi_auth(self, user:UserDBWithPsw):
+        if not (await self.bazis.login(user=user.login, password=user.pwd)):
+            raise NotFoundUserError(message='This user not found in bazis MADI. Maybe password is wrong.')
+        return True
     
-
-class AppOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
-    def __init__(self, *, 
-                 grant_type: str | None = None, 
-                 login: str, 
-                 password: str, 
-                 scope: str = "", 
-                 client_id: str | None = None, 
-                 client_secret: str | None = None):
-        super().__init__(
-            grant_type=grant_type, 
-            username=login, 
-            password=password, 
-            scope=scope, 
-            client_id=client_id, 
-            client_secret=client_secret
-        )
+    async def auth_user(self, user:UserDBWithPsw):
+        db_user = (await self.db.get_by_column('login', user.login))
+        if not db_user:
+            raise NotFoundUserError(message='This user was not found in the database. Please contact your administrator so he can add your account to the system.')
+        if not self.password_manager.verify_password(user.pwd, db_user[0].hashed_password):
+            raise IncorrectPasswordError(message='Incorrect password.')
+        return True
+    
+    async def regist_user(self, user:UserDBWithPsw):
+        await self.is_madi_auth(user)
+        if not await self.db.get_by_column('login', user.login):
+            hashed_password = self.password_manager.get_password_hash(user.pwd)
+            await self.db.add(UserDBWithHashedPassword(
+                login=user.login,
+                hashed_password=hashed_password
+            ))
+        return UsersDB(login=user.login)
+    
+    async def delete_user(self, user_id:int):
+        return await self.db.delete(user_id)

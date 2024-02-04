@@ -120,20 +120,15 @@ weekday = Table(
 
 cms_metadata = MetaData()
 
-# user_id_seq = Sequence('user_id_seq', cms_metadata)
 user = Table(
     'user',
     cms_metadata,
-    Column("id", Integer, primary_key=True, unique=True),
+    Column('id', Integer, primary_key=True, unique=True),
     Column('login', String),
     Column('hashed_password', String)
 )
 cms_engine = create_engine(
-    f"postgresql+psycopg://{DB_CMS_USER}:{DB_CMS_PASSWORD}@{DB_CMS_HOST}/{DB_CMS_NAME}",
-    # get_db_url(DB_CMS_USER, DB_CMS_PASSWORD, DB_CMS_HOST, DB_CMS_NAME), 
+    get_db_url(DB_CMS_USER, DB_CMS_PASSWORD, DB_CMS_HOST, DB_CMS_NAME), 
     echo=False
 )
-
-for  i in cms_metadata.sorted_tables:
-    print(i)
 cms_metadata.create_all(cms_engine)

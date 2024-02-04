@@ -1,3 +1,4 @@
+from config import ROOT_CMS_NAME, ROOT_CMS_PSWD
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from auth import router as auth_router
@@ -23,3 +24,16 @@ app.add_middleware(
 
 app.include_router(auth_router.router)
 app.include_router(group_router.router)
+
+
+@app.on_event('startup')
+async def startup_event():
+    import auth as auth_module
+    from auth import auth
+    auth_manager = auth.Authenticator()
+    await auth_manager.regist_user(
+        auth_module.models.UserDBWithPsw(
+            login=ROOT_CMS_NAME,
+            pwd=ROOT_CMS_PSWD
+        )
+    )

@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 from jose import jwt
+from passlib.context import CryptContext
 from .models import Token
 
 class TokenCreater:
@@ -28,3 +29,16 @@ class TokenCreater:
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
+    
+class PasswordsManager:
+    def __init__(
+            self, 
+            schemes:list=["bcrypt"], 
+            deprecated:str="auto") -> None:
+        self.context = CryptContext(schemes=schemes, deprecated=deprecated)
+
+    def verify_password(self, plain_password, hashed_password):
+        return self.context.verify(plain_password, hashed_password)
+    
+    def get_password_hash(self, password):
+        return self.context.hash(password)

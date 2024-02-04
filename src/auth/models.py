@@ -13,3 +13,6 @@ class UsersDB(BaseModel):
 
 class UserDBWithPsw(UsersDB):
     pwd:str
+
+class UserDBWithHashedPassword(UsersDB):
+    hashed_password:str

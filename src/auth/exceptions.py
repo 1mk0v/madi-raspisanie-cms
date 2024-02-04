@@ -1,3 +1,4 @@
+from starlette.status import HTTP_400_BAD_REQUEST
 from exceptions import BaseAPIException 
 from fastapi import status
 
@@ -15,3 +16,7 @@ class IncorrectPasswordError(AuthException):
     def __init__(self, *args: object, status_code = status.HTTP_400_BAD_REQUEST,
                  message: str = "Incorrect password!",) -> None:
         super().__init__(*args, message = message, status_code = status_code)
+
+class UserAlreadyRegistredError(AuthException):
+    def __init__(self, *args: object, message: str = "This user already registred!", status_code=status.HTTP_400_BAD_REQUEST) -> None:
+        super().__init__(*args, message=message, status_code=status_code)
