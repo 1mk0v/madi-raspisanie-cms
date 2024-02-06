@@ -2,7 +2,11 @@ from config import ROOT_CMS_NAME, ROOT_CMS_PSWD
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from auth import router as auth_router
-from users import router as group_router
+from users import router as users_router
+from departments import router as department_router
+from groups import router as groups_router
+from teachers import router as teacher_router
+
 
 app = FastAPI(
     title='MADI Raspisanie CMS',
@@ -23,7 +27,10 @@ app.add_middleware(
 )
 
 app.include_router(auth_router.router)
-app.include_router(group_router.router)
+app.include_router(users_router.router)
+app.include_router(department_router.router)
+app.include_router(groups_router.router)
+app.include_router(teacher_router.router)
 
 
 @app.on_event('startup')
@@ -35,5 +42,6 @@ async def startup_event():
         auth_module.models.UserDBWithPsw(
             login=ROOT_CMS_NAME,
             pwd=ROOT_CMS_PSWD
-        )
+        ),
+        use_bazis=False
     )
