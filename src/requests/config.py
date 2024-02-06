@@ -1,0 +1,3 @@
+import os
+
+BAZIS_MADI_LOGIN_URL = os.getenv('BAZIS_MADI_LOGIN_URL')
