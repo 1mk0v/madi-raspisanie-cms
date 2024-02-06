@@ -66,4 +66,6 @@ class DatabaseInterface:
         finally:
             self.session.commit()
 
-
+    @property
+    def model(self) -> BaseModel:
+        return self.__model
