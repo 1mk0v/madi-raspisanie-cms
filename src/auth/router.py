@@ -26,10 +26,11 @@ async def auth_user(
         )
     
 @router.post('/registration', dependencies=[oauth2_scheme])
-async def register_user(user:UserDBWithPsw) -> UsersDB:
+async def register_user(user:UserDBWithPsw, 
+                        use_bazis:bool = False) -> UsersDB:
     try:
         auth = Authenticator()
-        return await auth.regist_user(user)
+        return await auth.regist_user(user, use_bazis)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,

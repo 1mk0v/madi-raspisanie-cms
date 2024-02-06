@@ -27,8 +27,8 @@ class Authenticator:
             raise IncorrectPasswordError(message='Incorrect password.')
         return True
     
-    async def regist_user(self, user:UserDBWithPsw):
-        await self.is_madi_auth(user)
+    async def regist_user(self, user:UserDBWithPsw, use_bazis:bool):
+        if use_bazis: await self.is_madi_auth(user)
         if not await self.db.get_by_column('login', user.login):
             hashed_password = self.password_manager.get_password_hash(user.pwd)
             await self.db.add(UserDBWithHashedPassword(
