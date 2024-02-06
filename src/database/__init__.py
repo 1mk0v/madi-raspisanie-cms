@@ -36,9 +36,9 @@ class DatabaseInterface:
 
     async def add(self, data:BaseModel):
         try:
-            query = self.schema.insert().values([
-                data.model_dump()
-            ])
+            query = (self.schema.insert()
+                     .values([data.model_dump()])
+                     .returning(self.schema))
             return self.session.execute(query)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
@@ -59,8 +59,9 @@ class DatabaseInterface:
     async def delete(self, id):
         try:
             query = (self.schema.delete().where(self.schema.c['id'] == int(id))
-                     .execution_options(synchronize_session="fetch"))
-            return self.session.execute(query)
+                     .execution_options(synchronize_session="fetch")
+                     .returning(self.schema))
+            return self.session.execute(query).rowcount
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
         finally:
