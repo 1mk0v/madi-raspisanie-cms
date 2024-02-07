@@ -1,4 +1,9 @@
-from sqlalchemy import Table, Column, Sequence, Integer, String, MetaData, create_engine
+from sqlalchemy import (
+    Table, Column, Sequence, 
+    Integer, String, MetaData, 
+    ForeignKey, DateTime, create_engine
+)
+
 from .config import (
     DB_SCHEDULE_HOST, DB_SCHEDULE_NAME, DB_SCHEDULE_PASSWORD, DB_SCHEDULE_USER,
     DB_CMS_HOST, DB_CMS_NAME, DB_CMS_PASSWORD, DB_CMS_USER
@@ -127,6 +132,37 @@ user = Table(
     Column('login', String),
     Column('hashed_password', String)
 )
+user_info = Table(
+    'user_info',
+    cms_metadata,
+    Column('user_id', Integer, ForeignKey("user.id")),
+    Column('name', String),
+    Column('type_id', Integer, ForeignKey("user_type.id"))
+)
+user_type = Table(
+    'user_type',
+    cms_metadata,
+    Column('id', Integer),
+    Column('value', String),
+    Column('priority', Integer)
+)
+cms_settings = Table(
+    'settings',
+    cms_metadata,
+    Column('id', Integer),
+    Column('name', String),
+    Column('value', Integer)
+)
+history = Table(
+    'history',
+    cms_metadata,
+    Column('host', String, nullable=True),
+    Column('user_id', Integer, ForeignKey("user.id"), nullable=True),
+    Column('action', String),
+    Column('date', DateTime),
+    Column('detail', String)
+)
+
 cms_engine = create_engine(
     get_db_url(DB_CMS_USER, DB_CMS_PASSWORD, DB_CMS_HOST, DB_CMS_NAME), 
     echo=False
