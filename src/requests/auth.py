@@ -12,3 +12,13 @@ class BazisMadiRequests(BaseRequests):
         if result.text == self.none_auth_title:
             return False
         return True
+
+    async def get_name_of_user(self, user:str, password:str, url='stud'):
+        response = await super()._post(url, {'usr':user,'psw':password})
+        result = bs(response.body, 'lxml').find('div', {'class':'tile-bar'})
+        name = result.text.split(' ')
+        return {
+            'surname': name[0],
+            'name': name[1],
+            'patronymic': name[2]
+        }
