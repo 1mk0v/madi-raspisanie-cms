@@ -13,7 +13,11 @@ class UserInfoDB(BaseModel):
 
 class UserRegist(UserDBWithPsw):
     name:str | None = None
-    type_id:int
+    priority:int
 
 class UserDBWithHashedPassword(UsersDB):
     hashed_password:str
+
+class UserType(BaseModel):
+    value:str
+    priority:int
