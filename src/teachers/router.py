@@ -39,7 +39,7 @@ async def add_teacher(data:TeacherModel): # type: ignore
 async def delete_teacher(id:int):
     try:
         teacher_table = TeacherTableInterface()
-        return await teacher_table.delete(id)
+        return await teacher_table.delete(value=id)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,

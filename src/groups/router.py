@@ -39,7 +39,7 @@ async def add_group(data:GroupModel): # type: ignore
 async def delete_group(id:int):
     try:
         group_table = GroupTableInterface()
-        return await group_table.delete(id)
+        return await group_table.delete(value=id)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,

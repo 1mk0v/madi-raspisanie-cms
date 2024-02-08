@@ -16,8 +16,8 @@ DepartmentModel:BaseModel = get_pydantic_model(DepartmentTableInterface())
 @router.get('/')
 async def get_groups(limit:int = 10, offset:int = 0):
     try:
-        group_table = DepartmentTableInterface()
-        return await group_table.get(limit=limit, offset=offset)
+        department_table = DepartmentTableInterface()
+        return await department_table.get(limit=limit, offset=offset)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,
@@ -27,8 +27,10 @@ async def get_groups(limit:int = 10, offset:int = 0):
 @router.post('/add')
 async def add_group(data:DepartmentModel): # type: ignore
     try:
-        group_table = DepartmentTableInterface()
-        return await group_table.add(data)
+        department_table = DepartmentTableInterface()
+        res = await department_table.add(data)
+        print(res)
+        return res
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,
@@ -38,8 +40,8 @@ async def add_group(data:DepartmentModel): # type: ignore
 @router.delete('/delete/{id}')
 async def delete_group(id:int):
     try:
-        group_table = DepartmentTableInterface()
-        return await group_table.delete(id)
+        department_table = DepartmentTableInterface()
+        return await department_table.delete(value=id)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,
