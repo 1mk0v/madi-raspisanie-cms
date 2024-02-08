@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from users.models import UserDBWithPsw, UserRegist, UsersDB
 from .auth import Authenticator
-from .models import UserDBWithPsw, Token, UsersDB
+from .models import Token
 from .dependencies import oauth2_scheme
 from exceptions import BaseAPIException
 from typing import Annotated
@@ -26,8 +27,7 @@ async def auth_user(
         )
     
 @router.post('/registration', dependencies=[oauth2_scheme])
-async def register_user(user:UserDBWithPsw, 
-                        use_bazis:bool = False) -> UsersDB:
+async def register_user(user:UserRegist, use_bazis:bool = False) -> UsersDB:
     try:
         auth = Authenticator()
         return await auth.regist_user(user, use_bazis)
