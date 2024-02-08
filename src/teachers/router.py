@@ -14,7 +14,7 @@ router = APIRouter(
 TeacherModel:BaseModel = get_pydantic_model(TeacherTableInterface())
 
 @router.get('/')
-async def get_groups(limit:int = 10, offset:int = 0):
+async def get_teachers(limit:int = 10, offset:int = 0):
     try:
         teacher_table = TeacherTableInterface()
         return await teacher_table.get(limit=limit, offset=offset)
@@ -25,7 +25,7 @@ async def get_groups(limit:int = 10, offset:int = 0):
         )
 
 @router.post('/add')
-async def add_group(data:TeacherModel): # type: ignore
+async def add_teacher(data:TeacherModel): # type: ignore
     try:
         teacher_table = TeacherTableInterface()
         return await teacher_table.add(data)
@@ -36,10 +36,10 @@ async def add_group(data:TeacherModel): # type: ignore
         )
     
 @router.delete('/delete/{id}')
-async def delete_group(id:int):
+async def delete_teacher(id:int):
     try:
         teacher_table = TeacherTableInterface()
-        return await teacher_table.add(id)
+        return await teacher_table.delete(id)
     except BaseAPIException as error:
         raise HTTPException(
             status_code=error.status_code,
