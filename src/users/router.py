@@ -39,6 +39,16 @@ async def get_current_user(token: Annotated[str, dependencies.oauth2_scheme]):
         raise exceptions.NotFoundUserError()
     return user[0]
 
+async def get_current_user_type(current_user:Annotated[dict, Depends(get_current_user)]):
+    try:
+        user_info = UserInfoTableInterface()
+        return await user_info.get_user_type(current_user.id)
+    except BaseAPIException as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail=error.message
+        )
+
 
 @router.get('/me')
 async def get_me(current_user:Annotated[dict, Depends(get_current_user)]):
@@ -49,6 +59,17 @@ async def get_me(current_user:Annotated[dict, Depends(get_current_user)]):
             status_code=error.status_code,
             detail=error.message
         )
+    
+@router.get('/me/type')
+async def get_me(type:Annotated[dict, Depends(get_current_user_type)]):
+    try:
+        return type
+    except BaseAPIException as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail=error.message
+        )
+    
 
 @router.delete('/delete')
 async def delete_user(id:int, current_user:Annotated[dict, Depends(get_current_user)]):
