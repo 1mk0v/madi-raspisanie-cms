@@ -56,7 +56,7 @@ class DatabaseInterface:
         finally:
             self.session.commit()
 
-    async def delete(self, column, value):
+    async def delete(self, column:str = 'id', value = None):
         try:
             query = (self.schema.delete().where(self.schema.c[column] == int(value))
                      .execution_options(synchronize_session="fetch")
