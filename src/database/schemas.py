@@ -132,6 +132,13 @@ user = Table(
     Column('login', String),
     Column('hashed_password', String)
 )
+user_type = Table(
+    'user_type',
+    cms_metadata,
+    Column('id', Integer, primary_key=True, unique=True),
+    Column('value', String),
+    Column('priority', Integer)
+)
 user_info = Table(
     'user_info',
     cms_metadata,
@@ -139,17 +146,10 @@ user_info = Table(
     Column('name', String),
     Column('type_id', Integer, ForeignKey("user_type.id"))
 )
-user_type = Table(
-    'user_type',
-    cms_metadata,
-    Column('id', Integer),
-    Column('value', String),
-    Column('priority', Integer)
-)
 cms_settings = Table(
     'settings',
     cms_metadata,
-    Column('id', Integer),
+    Column('id', Integer, primary_key=True, unique=True),
     Column('name', String),
     Column('value', Integer)
 )
