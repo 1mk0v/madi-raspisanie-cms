@@ -36,6 +36,7 @@ async def startup_event():
     from database import DatabaseInterface, schemas
     from users import config, models as user_models
     from auth import auth
+    import exceptions as exc
 
     auth_manager = auth.Authenticator()
     user_type_table = DatabaseInterface(schemas.user_type, schemas.cms_engine)
@@ -43,12 +44,18 @@ async def startup_event():
     if not await user_type_table.get():
         for user_type in config.USER_TYPES:
             await user_type_table.add(user_type)
-    await auth_manager.regist_user(
-        user_models.UserRegist(
-            login=ROOT_CMS_NAME,
-            pwd=ROOT_CMS_PSWD,
-            priority=100
-        ),
-        use_bazis=False
-    )
+    try:
+        await auth_manager.regist_user(
+            user_models.UserRegist(
+                login=ROOT_CMS_NAME,
+                pwd=ROOT_CMS_PSWD,
+                priority=100
+            ),
+            use_bazis=False,
+            current_user_type=user_models.UserType(
+                value='APP', priority=101
+            )
+        )
+    except exc.BaseAPIException as error:
+        print(error.message)
 
