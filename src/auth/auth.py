@@ -1,10 +1,15 @@
+from fastapi import Depends
 from . import TokenCreater, PasswordsManager
 from .config import SECRET_KEY, ALGORITHM 
 from users.models import UserDBWithPsw, UserRegist, UserInfoDB, UserDBWithHashedPassword, UsersDB
-from .exceptions import NotFoundUserError, IncorrectPasswordError
+from .exceptions import (
+    NotFoundUserError, IncorrectPasswordError,
+    UserAlreadyRegistredError, RegistHigherRankingUserError
+)
 from requests import auth
-from users import UserInfoTableInterface, UserTableInterface
+from users import UserInfoTableInterface, UserTableInterface, router as user_router
 from database import DatabaseInterface, schemas
+from typing import Annotated
 
 
 class Authenticator:
@@ -31,17 +36,20 @@ class Authenticator:
             raise IncorrectPasswordError(message='Incorrect password.')
         return await self.user_info_table.get_by_column('user_id', db_user[0].id)
     
-    async def regist_user(self, user:UserRegist, use_bazis:bool):
+    async def regist_user(self, user:UserRegist, use_bazis:bool, current_user_type):
         if use_bazis: user.name = await self.is_madi_user(user)
-        if not await self.user_table.get_by_column('login', user.login):
-            hashed_password = self.password_manager.get_password_hash(user.pwd)
-            result = await self.user_table.add(UserDBWithHashedPassword(
-                login=user.login,
-                hashed_password=hashed_password
-            ))
-            await self.user_info_table.add(UserInfoDB(
-                user_id=result.id,
-                name=user.name,
-                type_id = (await self.user_types_table.get_by_column('priority', user.priority))[0].id
-            ))
+        if await self.user_table.get_by_column('login', user.login):
+            raise UserAlreadyRegistredError()
+        if current_user_type.priority < user.priority:
+            raise RegistHigherRankingUserError()
+        hashed_password = self.password_manager.get_password_hash(user.pwd)
+        result = await self.user_table.add(UserDBWithHashedPassword(
+            login=user.login,
+            hashed_password=hashed_password
+        ))
+        await self.user_info_table.add(UserInfoDB(
+            user_id=result.id,
+            name=user.name,
+            type_id = (await self.user_types_table.get_by_column('priority', user.priority))[0].id
+        ))
         return UsersDB(login=user.login)
