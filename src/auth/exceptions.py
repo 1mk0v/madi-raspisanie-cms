@@ -20,3 +20,7 @@ class IncorrectPasswordError(AuthException):
 class UserAlreadyRegistredError(AuthException):
     def __init__(self, *args: object, message: str = "This user already registred!", status_code=status.HTTP_400_BAD_REQUEST) -> None:
         super().__init__(*args, message=message, status_code=status_code)
+
+class RegistHigherRankingUserError(BaseAPIException):
+    def __init__(self, *args: object, detail: dict = None, message: str = "You cannot regist a user higher than you in rank!" , status_code=400) -> None:
+        super().__init__(*args, detail=detail, message=message, status_code=status_code)
