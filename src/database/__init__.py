@@ -67,6 +67,16 @@ class DatabaseInterface:
         finally:
             self.session.commit()
 
+    async def select_or_add(self, data:BaseModel):
+        try:
+            if self.get_by_column(columnName="id", value=data.id):
+                return data[0]
+            return self.add(data=data)
+        except SQLException.SQLAlchemyError as error:
+            raise exc.BaseAPIException(message=error.args, status_code=500)
+        finally:
+            self.session.commit()
+
     @property
     def model(self) -> BaseModel:
         return self.__model

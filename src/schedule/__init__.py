@@ -25,17 +25,18 @@ class ScheduleTableInterface(DatabaseInterface):
             nameOfField = field[0]
             fieldData = field[1]
             if type(fieldData) not in [str, int, datetime.time]:
-                print(data)
-                databaseInterface:DatabaseInterface = self.__dict__[nameOfField] 
-                data[f'{nameOfField}_id'] = await databaseInterface.add(
+                databaseInterface:DatabaseInterface = self.__dict__[nameOfField]
+                this_data = await self.add(fieldData)
+                print(databaseInterface.model, this_data)
+                data[f'{nameOfField}_id'] = await databaseInterface.select_or_add(
                     databaseInterface.model(
-                        (await self.add(field)).id
+                        **this_data
                     )
-                ) 
+                )
             else:
                 data[f'{nameOfField}'] = fieldData
         
-        
+        print(data)
         return data
         
             # databaseInterface:DatabaseInterface = self.__dict__[nameOfField]
