@@ -1,3 +1,5 @@
+from typing import List
+from pydantic import BaseModel
 from sqlalchemy import Engine, Table
 from database import DatabaseInterface, schemas
 import datetime
@@ -17,7 +19,24 @@ class ScheduleTableInterface(DatabaseInterface):
         self.weekday = DatabaseInterface(schemas.weekday, schemas.schedule_engine, ['id'])
         super().__init__(table_schema, engine, ignore_keys=['id'])
 
-    #DONT WORK
+    async def _getByRowId(self, row):
+        return {
+            "date": (await self.date.get_by_column('id',row.date_id))[0],
+            "discipline": (await self.discipline.get_by_column('id', row.discipline_id))[0].value,
+            "type": (await self.type.get_by_column('id', row.type_id))[0].value,
+            "auditorium": (await self.auditorium.get_by_column('id', row.auditorium_id))[0].value,
+            "teacher": (await self.teacher.get_by_column('id', row.teacher_id))[0],
+            "group": (await self.group.get_by_column('id', row.group_id))[0],
+            "weekday": (await self.weekday.get_by_column('id', row.weekday_id))[0].value,
+        }
+
+    async def get(self, limit: int = 10, offset: int = 0) -> List[BaseModel]:
+        data = list()
+        for lesson in await super().get(limit, offset):
+            data.append(await self._getByRowId(lesson))
+        return data
+    
+
     async def _get_data(self, schedule):
         data = {}
         for field in schedule:
