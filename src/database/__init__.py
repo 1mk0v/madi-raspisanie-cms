@@ -11,14 +11,19 @@ class DatabaseInterface:
     def __init__(
             self,
             table_schema:Table,
-            engine:Engine
+            engine:Engine,
+            ignore_keys:list = [],
             ) -> None:
         self.schema = table_schema
         Session = sessionmaker(bind=engine)
         self.session = Session()
-        model = {i.name: (SkipValidation[i.type.python_type], ...) for i in self.schema.columns}
-        config = ConfigDict(arbitrary_types_allowed=True)
-        self.__model:BaseModel = create_model(self.schema.name, **model, __config__=config)
+        self.__dict_model = {i.name: (SkipValidation[i.type.python_type], ...) for i in self.schema.columns}
+        for key in ignore_keys: self.__dict_model.pop(key, None) 
+        self.__model:BaseModel = create_model(
+            self.schema.name, 
+            **self.__dict_model, 
+            __config__=ConfigDict(arbitrary_types_allowed=True)
+        )
 
     async def get(self, limit:int = 10, offset:int = 0) -> List[BaseModel]:
         try:
@@ -30,7 +35,7 @@ class DatabaseInterface:
     async def get_by_column(self, columnName:str, value, limit:int = 10, offset:int = 0) -> List[BaseModel]:
         try:
             query = self.schema.select().limit(limit).offset(offset).where(self.schema.c[columnName] == value)
-            return [self.__model(**i._mapping) for i in self.session.execute(query).all()]
+            return [i._mapping for i in self.session.execute(query).all()]
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
 
@@ -39,7 +44,7 @@ class DatabaseInterface:
             query = (self.schema.insert()
                      .values([data.model_dump()])
                      .returning(self.schema))
-            return self.__model(**self.session.execute(query).fetchone()._mapping)
+            return self.session.execute(query).fetchone()._mapping
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
         finally:
@@ -67,13 +72,14 @@ class DatabaseInterface:
         finally:
             self.session.commit()
 
-    async def select_or_add(self, data:BaseModel):
+    async def select_or_add(self, data:dict) -> int:
         try:
-            if self.get_by_column(columnName="id", value=data.id):
-                return data[0]
-            return self.add(data=data)
-        except SQLException.SQLAlchemyError as error:
-            raise exc.BaseAPIException(message=error.args, status_code=500)
+            key = list(data.keys())[0]
+            return (await self.add(data=self.model(**data)))["id"]
+        except exc.BaseAPIException:
+            return (await self.get_by_column(key, data[key]))[0]["id"]
+        except:
+            return (await self.get_by_column(key, data[key]))[0]["id"]
         finally:
             self.session.commit()
 
