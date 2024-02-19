@@ -16,7 +16,7 @@ class Time(BaseModel):
 
 class Date(BaseModel):
     day:str | None = None
-    friequency: str | None = None
+    frequency: str | None = None
     time:Time | None = None
 
 class Lesson(BaseModel):
