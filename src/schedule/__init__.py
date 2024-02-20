@@ -66,9 +66,9 @@ class ScheduleTableInterface(DatabaseInterface):
             "group_id": await self.group.select_or_add(schedule.group, key="id"),
             "teacher_id": await self.teacher.select_or_add(schedule.teacher, key="id"),
             "weekday_id": await self.weekday.select_or_add(schedule.weekday, key=None),
-            "discipline_id": await self.weekday.select_or_add(schedule.discipline, key=None),
-            "type_id": await self.weekday.select_or_add(schedule.type, key=None),
-            "auditorium_id": await self.weekday.select_or_add(schedule.auditorium, key=None)
+            "discipline_id": await self.discipline.select_or_add(schedule.discipline, key=None),
+            "type_id": await self.type.select_or_add(schedule.type, key=None),
+            "auditorium_id": await self.auditorium.select_or_add(schedule.auditorium, key=None)
         }
         validated_data = self.model.parse_obj(data)
         row_of_added_data = await self.get_by_row(validated_data)
