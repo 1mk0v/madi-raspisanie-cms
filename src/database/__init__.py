@@ -80,6 +80,7 @@ class DatabaseInterface:
                 if key else await self.get_by_column('value', data)
             )
             if row: return row[0].id
+            if not key: return (await self.add(data=self.model.parse_obj({"value":data})))["id"]
             return (await self.add(data=self.model(**data)))["id"]
         finally:
             self.session.commit()
