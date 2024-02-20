@@ -22,14 +22,21 @@ class ScheduleTableInterface(DatabaseInterface):
         super().__init__(table_schema, engine, ignore_keys=['id'])
 
     async def _getByRowId(self, row):
+        date = (await self.date.get_by_column('id',row.date_id))
+        discipline = (await self.discipline.get_by_column('id', row.discipline_id))
+        type = (await self.type.get_by_column('id', row.type_id))
+        auditorium = (await self.auditorium.get_by_column('id', row.auditorium_id))
+        teacher = (await self.teacher.get_by_column('id', row.teacher_id))
+        group = (await self.group.get_by_column('id', row.group_id))
+        weekday = (await self.weekday.get_by_column('id', row.weekday_id))
         return {
-            "date": (await self.date.get_by_column('id',row.date_id))[0],
-            "discipline": (await self.discipline.get_by_column('id', row.discipline_id))[0],
-            "type": (await self.type.get_by_column('id', row.type_id))[0],
-            "auditorium": (await self.auditorium.get_by_column('id', row.auditorium_id))[0],
-            "teacher": (await self.teacher.get_by_column('id', row.teacher_id))[0],
-            "group": (await self.group.get_by_column('id', row.group_id))[0],
-            "weekday": (await self.weekday.get_by_column('id', row.weekday_id))[0],
+            "date": date[0] if date else None,  
+            "discipline":discipline[0] if discipline else None,  
+            "type":type[0] if type else None,  
+            "auditorium":auditorium[0] if auditorium else None,  
+            "teacher":teacher[0] if teacher else None,  
+            "group":group[0] if group else None,  
+            "weekday":weekday[0] if weekday else None  
         }
 
     async def get_by_row(self, row:BaseModel):
