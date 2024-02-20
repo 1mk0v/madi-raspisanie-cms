@@ -28,7 +28,7 @@ class DatabaseInterface:
     async def get(self, limit:int = 10, offset:int = 0) -> List[BaseModel]:
         try:
             query = self.schema.select().limit(limit).offset(offset)
-            return [self.__model(**i._mapping) for i in self.session.execute(query).all()]
+            return [i._mapping for i in self.session.execute(query).all()]
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
 
@@ -40,6 +40,7 @@ class DatabaseInterface:
             raise exc.BaseAPIException(message=error.args, status_code=500)
 
     async def add(self, data:BaseModel):
+        if data == None: return data
         try:
             query = (self.schema.insert()
                      .values([data.model_dump()])
@@ -72,14 +73,14 @@ class DatabaseInterface:
         finally:
             self.session.commit()
 
-    async def select_or_add(self, data:dict) -> int:
+    async def select_or_add(self, data:dict, key:str = "id") -> int:
         try:
-            key = list(data.keys())[0]
+            row = (
+                await self.get_by_column(key, eval(f'data.{key}')) 
+                if key else await self.get_by_column('value', data)
+            )
+            if row: return row[0].id
             return (await self.add(data=self.model(**data)))["id"]
-        except exc.BaseAPIException:
-            return (await self.get_by_column(key, data[key]))[0]["id"]
-        except:
-            return (await self.get_by_column(key, data[key]))[0]["id"]
         finally:
             self.session.commit()
 
