@@ -7,6 +7,7 @@ from departments import router as department_router
 from groups import router as groups_router
 from teachers import router as teacher_router
 from schedule import router as schedule_router
+from date import router as date_router
 
 app = FastAPI(
     title='MADI Raspisanie CMS',
@@ -31,7 +32,9 @@ app.include_router(users_router.router)
 app.include_router(department_router.router)
 app.include_router(groups_router.router)
 app.include_router(teacher_router.router)
+app.include_router(date_router.router)
 app.include_router(schedule_router.router)
+
 
 
 
