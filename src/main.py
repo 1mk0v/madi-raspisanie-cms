@@ -7,6 +7,7 @@ from groups import router as groups_router
 from teachers import router as teacher_router
 from schedule import router as schedule_router
 from date import router as date_router
+from schedule_time import router as time_router
 from other_tables import router as other_router 
 
 app = FastAPI(
@@ -32,6 +33,7 @@ app.include_router(users_router.router)
 app.include_router(groups_router.router)
 app.include_router(teacher_router.router)
 app.include_router(date_router.router)
+app.include_router(time_router.router)
 app.include_router(schedule_router.router)
 app.include_router(other_router.router)
 
