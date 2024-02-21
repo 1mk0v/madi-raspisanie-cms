@@ -7,7 +7,8 @@ from database import DatabaseInterface, schemas
 from date import DateTableInterface
 
 class ScheduleTableInterface(DatabaseInterface):
-    def __init__(self, table_schema: Table = schemas.schedule_info, engine: Engine=schemas.schedule_engine) -> None:
+    def __init__(self, table_schema: Table = schemas.schedule_info, engine: Engine=schemas.schedule_engine
+                 , ignore_keys=['id']) -> None:
         self.auditorium = DatabaseInterface(schemas.auditorium, schemas.schedule_engine, ['id', 'department_id'])
         self.date = DateTableInterface()
         self.department = DatabaseInterface(schemas.department, schemas.schedule_engine)
@@ -19,7 +20,7 @@ class ScheduleTableInterface(DatabaseInterface):
         self.time = DatabaseInterface(schemas.time, schemas.schedule_engine, ['id'])
         self.type = DatabaseInterface(schemas.type, schemas.schedule_engine, ['id'])
         self.weekday = DatabaseInterface(schemas.weekday, schemas.schedule_engine, ['id'])
-        super().__init__(table_schema, engine, ignore_keys=['id'])
+        super().__init__(table_schema, engine, ignore_keys)
 
     async def _getByRowId(self, row):
         date = (await self.date.get_by_column('id',row.date_id))
@@ -30,6 +31,7 @@ class ScheduleTableInterface(DatabaseInterface):
         group = (await self.group.get_by_column('id', row.group_id))
         weekday = (await self.weekday.get_by_column('id', row.weekday_id))
         return {
+            "id": row.id,
             "date": date[0] if date else None,  
             "discipline":discipline[0] if discipline else None,  
             "type":type[0] if type else None,  

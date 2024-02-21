@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from date.router import DateModel
+from groups.router import GroupModel
 import datetime
 from typing import List
 
@@ -31,3 +33,13 @@ class Schedule(Lesson):
 
 class LessonInfo(Schedule):
     weekday:str | None = None
+
+class GetScheduleModel(BaseModel):
+    id:int
+    date:DateModel | None = None
+    discipline:Essence | None = None
+    type:Essence | None = None
+    auditorium:Community | None = None
+    group:GroupModel | None = None # type: ignore
+    teacher:GroupModel | None = None # type: ignore
+    weekday:Essence | None = None
