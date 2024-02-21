@@ -48,7 +48,7 @@ class DateTableInterface(DatabaseInterface):
             query = (self.schema.insert()
                      .values([data.model_dump()])
                      .returning(self.schema))
-            return self.session.execute(query).fetchone()
+            return self.session.execute(query).fetchone()._mapping
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
         finally:
