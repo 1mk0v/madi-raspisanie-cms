@@ -4,6 +4,7 @@ from auth import dependencies
 from exceptions import BaseAPIException 
 from . import GroupTableInterface
 from utils import get_pydantic_model
+from typing import List
 
 router = APIRouter(
     prefix='/group',
@@ -11,9 +12,9 @@ router = APIRouter(
     dependencies=[dependencies.oauth2_scheme]
 )
 
-GroupModel:BaseModel = get_pydantic_model(GroupTableInterface())
+GroupModel:BaseModel = get_pydantic_model(GroupTableInterface(ignore_keys=[]))
 
-@router.get('/')
+@router.get('/', response_model=List[GroupModel])
 async def get_groups(limit:int = 10, offset:int = 0):
     try:
         group_table = GroupTableInterface()
@@ -24,7 +25,7 @@ async def get_groups(limit:int = 10, offset:int = 0):
             detail=error.message
         )
 
-@router.post('/add')
+@router.post('/add', response_model=GroupModel)
 async def add_group(data:GroupModel): # type: ignore
     try:
         group_table = GroupTableInterface()
@@ -35,7 +36,7 @@ async def add_group(data:GroupModel): # type: ignore
             detail=error.message
         )
     
-@router.delete('/delete/{id}')
+@router.delete('/delete/{id}', response_model=int)
 async def delete_group(id:int):
     try:
         group_table = GroupTableInterface()
