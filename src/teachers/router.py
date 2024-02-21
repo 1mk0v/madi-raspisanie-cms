@@ -4,6 +4,7 @@ from auth import dependencies
 from exceptions import BaseAPIException 
 from . import TeacherTableInterface
 from utils import get_pydantic_model
+from typing import List
 
 router = APIRouter(
     prefix='/teacher',
@@ -11,9 +12,9 @@ router = APIRouter(
     dependencies=[dependencies.oauth2_scheme]
 )
 
-TeacherModel:BaseModel = get_pydantic_model(TeacherTableInterface())
+TeacherModel:BaseModel = get_pydantic_model(TeacherTableInterface(ignore_keys=[]))
 
-@router.get('/')
+@router.get('/', response_model=List[TeacherModel])
 async def get_teachers(limit:int = 10, offset:int = 0):
     try:
         teacher_table = TeacherTableInterface()
@@ -24,7 +25,7 @@ async def get_teachers(limit:int = 10, offset:int = 0):
             detail=error.message
         )
 
-@router.post('/add')
+@router.post('/add', response_model=TeacherModel)
 async def add_teacher(data:TeacherModel): # type: ignore
     try:
         teacher_table = TeacherTableInterface()
@@ -35,7 +36,7 @@ async def add_teacher(data:TeacherModel): # type: ignore
             detail=error.message
         )
     
-@router.delete('/delete/{id}')
+@router.delete('/delete/{id}', response_model=int)
 async def delete_teacher(id:int):
     try:
         teacher_table = TeacherTableInterface()
