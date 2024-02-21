@@ -12,6 +12,7 @@ router = APIRouter(
 )
 
 model = get_pydantic_model(TimeTableInterface(ignore_keys=[]))
+model_without_id = get_pydantic_model(TimeTableInterface())
 
 @router.get('/', response_model=List[model])
 async def get_date(limit:int = 10, offset:int = 0):
@@ -25,7 +26,7 @@ async def get_date(limit:int = 10, offset:int = 0):
         )
 
 @router.post('/add', response_model=model)
-async def add_date(data:model): #type: ignore
+async def add_date(data:model_without_id): #type: ignore
     try:
         time_table = TimeTableInterface()
         return await time_table.add(data)
