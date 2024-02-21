@@ -18,7 +18,7 @@ frequency_model = get_pydantic_model(DatabaseInterface(schemas.frequency, engine
 
 class DateModel(BaseModel):
     id:int
-    day:str
+    day:str | None
     frequency:frequency_model #type: ignore
     time:time_model #type: ignore
 
