@@ -15,7 +15,7 @@ class UserInfoTableInterface(DatabaseInterface):
         try:
             query = schemas.user_type.select().join(
                 schemas.user_type,
-                self.schema.c['type_id'] == schemas.user_type.c['id']
+                self.schema.c['priority'] == schemas.user_type.c['priority']
             ).where(self.schema.c['user_id'] == id)
             return self.session.execute(query).fetchone()._mapping
         except SQLException.SQLAlchemyError as error:

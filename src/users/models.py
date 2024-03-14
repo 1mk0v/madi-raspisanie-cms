@@ -9,7 +9,7 @@ class UserDBWithPsw(UsersDB):
 class UserInfoDB(BaseModel):
     user_id:int
     name:str | None
-    type_id:int
+    priority:int
 
 class UserRegist(UserDBWithPsw):
     name:str | None = None

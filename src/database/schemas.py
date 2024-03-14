@@ -135,16 +135,15 @@ user = Table(
 user_type = Table(
     'user_type',
     cms_metadata,
-    Column('id', Integer, primary_key=True, unique=True),
     Column('value', String),
-    Column('priority', Integer)
+    Column('priority', Integer, primary_key=True, unique=True)
 )
 user_info = Table(
     'user_info',
     cms_metadata,
     Column('user_id', Integer, ForeignKey("user.id")),
     Column('name', String),
-    Column('type_id', Integer, ForeignKey("user_type.id"))
+    Column('priority', Integer, ForeignKey("user_type.priority"))
 )
 cms_settings = Table(
     'settings',
