@@ -1,4 +1,5 @@
-from sqlalchemy import Table, Engine
+from sqlalchemy import Table, Engine, select
+from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy.exc as SQLException
 from pydantic import BaseModel, create_model, ConfigDict, SkipValidation
@@ -6,17 +7,16 @@ import exceptions as exc
 from typing import List
 
 
-class DatabaseInterface:
+class SyncDatabaseInterface:
 
     def __init__(
             self,
             table_schema:Table,
-            engine:Engine,
+            engine:AsyncEngine,
             ignore_keys:list = [],
             ) -> None:
         self.schema = table_schema
-        Session = sessionmaker(bind=engine)
-        self.session = Session()
+        self.engine = engine
         self.__dict_model = {i.name: (SkipValidation[i.type.python_type], ...) for i in self.schema.columns}
         for key in ignore_keys: self.__dict_model.pop(key, None) 
         self.__model:BaseModel = create_model(
@@ -25,53 +25,65 @@ class DatabaseInterface:
             __config__=ConfigDict(arbitrary_types_allowed=True)
         )
 
+    async def execute_query(self, query):
+        try:
+            async with self.engine.connect() as conn:    
+                return await conn.execute(query)
+        except SQLException.SQLAlchemyError as error:
+            print(error)
+        finally:
+            await conn.close()
+
+    async def execute_stmt(self, stmt):
+        try:
+            async with self.engine.connect() as conn:
+                result = await conn.execute(stmt)
+                await conn.commit()
+                return result
+        except SQLException.SQLAlchemyError as error:
+            print(error)
+            await conn.rollback()
+        finally:
+            await conn.close()
+
     async def get(self, limit:int = 10, offset:int = 0) -> List[BaseModel]:
         try:
-            query = self.schema.select().limit(limit).offset(offset)
-            return [i._mapping for i in self.session.execute(query).all()]
+            query = select(self.schema).limit(limit).offset(offset)
+            return await self.execute_query(query)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
 
-    async def get_by_column(self, columnName:str, value, limit:int = 10, offset:int = 0) -> List[BaseModel]:
+    async def get_by_column(self, columnName:str, value, limit:int = 10, offset:int = 0):
         try:
-            query = self.schema.select().limit(limit).offset(offset).where(self.schema.c[columnName] == value)
-            return [i._mapping for i in self.session.execute(query).all()]
+            query = select(self.schema).limit(limit).offset(offset).where(self.schema.c[columnName] == value)
+            return await self.execute_query(query)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
 
     async def add(self, data:BaseModel):
-        if data == None: return data
         try:
-            query = (self.schema.insert()
-                     .values([data.model_dump()])
-                     .returning(self.schema))
-            return self.session.execute(query).fetchone()._mapping
+            stmt = (self.schema.insert().values([data.model_dump()]).returning(self.schema))
+            return await self.execute_stmt(stmt)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
-        finally:
-            self.session.commit()
 
     async def update(self, id, columnName, value):
         try:
-            query = (self.schema.update().where(self.schema.c['id'] == id)
+            stmt = (self.schema.update().where(self.schema.c['id'] == id)
                      .values({self.schema.c[columnName]:value})
                      .execution_options(synchronize_session="fetch"))
-            return self.session.execute(query)
+            return await self.execute_stmt(stmt)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
-        finally:
-            self.session.commit()
 
     async def delete(self, column:str = 'id', value = None):
         try:
-            query = (self.schema.delete().where(self.schema.c[column] == int(value))
+            stmt = (self.schema.delete().where(self.schema.c[column] == int(value))
                      .execution_options(synchronize_session="fetch")
                      .returning(self.schema))
-            return self.session.execute(query).rowcount
+            return await self.execute_stmt(stmt)
         except SQLException.SQLAlchemyError as error:
             raise exc.BaseAPIException(message=error.args, status_code=500)
-        finally:
-            self.session.commit()
 
     async def select_or_add(self, data:dict, key:str = "id") -> int:
         try:

@@ -1,4 +1,3 @@
-from fastapi import Depends
 from . import TokenCreater, PasswordsManager
 from .config import SECRET_KEY, ALGORITHM 
 from users.models import UserDBWithPsw, UserRegist, UserInfoDB, UserDBWithHashedPassword, UsersDB
@@ -8,7 +7,8 @@ from .exceptions import (
 )
 from requests import auth
 from users import UserInfoTableInterface, UserTableInterface
-from database import DatabaseInterface, schemas
+from database import SyncDatabaseInterface
+from database.schemas import cms as schemas
 
 
 class Authenticator:
@@ -17,7 +17,7 @@ class Authenticator:
         self.bazis = auth.BazisMadiRequests()
         self.user_table = UserTableInterface()
         self.user_info_table = UserInfoTableInterface()
-        self.user_types_table = DatabaseInterface(schemas.user_type, schemas.cms_engine)
+        self.user_types_table = SyncDatabaseInterface(schemas.user_type, schemas.sync_engine)
         self.token_creater = TokenCreater(SECRET_KEY, ALGORITHM)
         self.password_manager = PasswordsManager()
 
@@ -28,7 +28,7 @@ class Authenticator:
         return user
     
     async def auth_user(self, user:UserDBWithPsw):
-        db_user = (await self.user_table.get_by_column('login', user.login))
+        db_user = (await self.user_table.get_by_column('login', user.login)).fetchall()
         if not db_user:
             raise NotFoundUserError(message='This user was not found in the database. Please contact your administrator so he can add your account to the system.')
         if not self.password_manager.verify_password(user.pwd, db_user[0].hashed_password):
@@ -37,25 +37,22 @@ class Authenticator:
     
     async def regist_user(self, user:UserRegist, use_bazis:bool, current_user_type):
         if use_bazis: user.name = await self.is_madi_user(user)
-        if await self.user_info_table.get_by_column('priority', user.priority):
+        if (await self.user_info_table.get_by_column('priority', user.priority)).fetchall():
             raise UserAlreadyRegistredError(message='Root user already registred!')
-        if await self.user_table.get_by_column('login', user.login):
+        if (await self.user_table.get_by_column('login', user.login)).fetchall():
             raise UserAlreadyRegistredError()
         if current_user_type.priority < user.priority:
             raise RegistHigherRankingUserError()
         hashed_password = self.password_manager.get_password_hash(user.pwd)
-        result = await self.user_table.add(UserDBWithHashedPassword(
+        result = (await self.user_table.add(UserDBWithHashedPassword(
             login=user.login,
             hashed_password=hashed_password
-        ))
-        print(UserInfoDB(
-            user_id=result.id,
-            name=user.name,
-            priority = user.priority
-        ))
-        await self.user_info_table.add(UserInfoDB(
-            user_id=result.id,
-            name=user.name,
-            priority = user.priority
-        ))
+        ))).fetchone()
+        print((await self.user_info_table.add(
+            UserInfoDB(
+                user_id=result.id,
+                name=user.name,
+                priority = user.priority
+            )
+        )).fetchone())
         return UsersDB(login=user.login)

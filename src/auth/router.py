@@ -28,9 +28,11 @@ async def auth_user(
         )
     
 @router.post('/registration', dependencies=[oauth2_scheme])
-async def register_user(user:UserRegist,
-                        current_user_type: Annotated[dict, Depends(user_router.get_current_user_type)],
-                        use_bazis:bool = False) -> UsersDB:
+async def register_user(
+    user:UserRegist,
+    current_user_type: Annotated[dict, Depends(user_router.get_current_user_type)],
+    use_bazis:bool = False
+) -> UsersDB:
     try:
         auth = Authenticator()
         return await auth.regist_user(user, use_bazis, current_user_type)
